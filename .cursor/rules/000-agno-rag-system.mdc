@@ -1,0 +1,496 @@
+---
+description: 代码开发规范
+alwaysApply: false
+---
+# Agno RAG System Development Rules
+# 基于Agno框架的RAG系统开发规范
+
+## 项目概述
+这是一个基于Agno框架开发的RAG（Retrieval-Augmented Generation）系统，遵循Agno社区最佳实践和Python规范。
+
+## 代码规范
+
+### 1. 文件结构和命名
+- 使用小写字母和下划线的snake_case命名
+- 文件名应清晰描述其功能
+- 目录结构遵循Agno推荐的项目布局
+- 所有Python文件必须以`.py`结尾
+
+### 2. 代码风格
+- 遵循PEP 8 Python代码风格指南
+- 使用4个空格进行缩进，不使用制表符
+- 行长度限制在88个字符以内（Black格式化器标准）
+- 使用类型注解（Type Hints）
+- 优先使用f-strings进行字符串格式化
+
+### 3. 导入规范
+```python
+# 标准库导入
+import os
+import sys
+from typing import List, Dict, Optional, Union
+
+# 第三方库导入
+import agno
+from agno import Agent, Tool, Context
+import asyncio
+
+# 本地模块导入
+from .models import RAGDocument
+from .utils import text_processor
+```
+
+### 4. 类和函数定义
+- 所有公共API必须有类型注解
+- 使用docstring记录所有函数、类和模块
+- 遵循Google风格的docstring格式
+- 私有方法和属性使用下划线前缀
+
+### 5. 错误处理
+- 使用具体的异常类型而不是通用Exception
+- 提供有意义的错误消息
+- 使用try-except块处理可预期的异常
+- 记录错误日志以便调试
+
+## Agno特定规范
+
+### 1. Agent定义
+```python
+from agno import Agent, Tool, Context
+from typing import List, Dict, Any
+
+class RAGAgent(Agent):
+    """
+    RAG系统的主要代理类
+    
+    负责处理文档检索和生成任务，集成向量数据库
+    和语言模型来提供准确的回答。
+    """
+    
+    def __init__(self, name: str = "rag_agent"):
+        super().__init__(name=name)
+        self.vector_store = None
+        self.llm = None
+    
+    async def setup(self, context: Context) -> None:
+        """初始化代理，设置工具和模型"""
+        # 实现初始化逻辑
+        pass
+    
+    async def process(self, context: Context) -> str:
+        """处理用户查询并返回回答"""
+        # 实现RAG逻辑
+        pass
+```
+
+### 2. Tool定义
+```python
+from agno import Tool
+from typing import Any, Dict
+
+class DocumentSearchTool(Tool):
+    """
+    文档搜索工具
+    
+    在向量数据库中搜索相关文档片段，支持语义搜索
+    和关键词匹配。
+    """
+    
+    name = "document_search"
+    description = "在知识库中搜索相关文档片段"
+    
+    async def execute(self, query: str, **kwargs) -> List[Dict[str, Any]]:
+        """
+        执行文档搜索
+        
+        Args:
+            query: 搜索查询字符串
+            **kwargs: 额外参数（如top_k, similarity_threshold等）
+            
+        Returns:
+            包含相关文档片段的列表
+        """
+        # 实现搜索逻辑
+        pass
+```
+
+### 3. Context使用
+```python
+from agno import Context
+
+async def process_user_query(context: Context, query: str) -> str:
+    """
+    处理用户查询的完整流程
+    
+    Args:
+        context: Agno上下文对象
+        query: 用户查询字符串
+        
+    Returns:
+        生成的回答字符串
+    """
+    # 使用context进行状态管理
+    context.set("user_query", query)
+    context.set("search_results", [])
+    
+    # 执行RAG流程
+    return await rag_agent.process(context)
+```
+
+## 代码生成约束
+
+### 1. 必须遵循的原则
+- 所有代码必须有完整的类型注解
+- 所有公共API必须有详细的docstring
+- 使用async/await进行异步操作
+- 实现适当的错误处理和日志记录
+- 遵循Agno框架的设计模式
+
+### 2. 禁止的做法
+- 避免使用全局变量
+- 避免硬编码配置值
+- 避免使用过时的Python语法
+- 避免忽略异常处理
+- 避免编写过于复杂的函数（超过50行）
+
+### 3. 代码质量要求
+- 使用Black进行代码格式化
+- 使用flake8进行代码检查
+- 使用mypy进行类型检查
+- 测试覆盖率不低于80%
+- 所有代码必须通过CI/CD检查
+
+## 代码生成指导
+
+### 1. 文件创建规则
+- 创建新文件时，必须包含完整的模块级docstring
+- 所有导入语句必须按标准库、第三方库、本地模块的顺序排列
+- 每个文件必须包含适当的类型注解导入
+
+### 2. 函数和类生成规则
+- 所有公共函数必须有完整的类型注解
+- 所有类必须有详细的docstring，包含Attributes和Example部分
+- 私有方法使用下划线前缀
+- 异步函数必须使用async/await语法
+
+### 3. 错误处理规则
+- 使用具体的异常类型，避免使用通用Exception
+- 提供有意义的错误消息
+- 在适当的地方使用try-except块
+- 记录错误日志以便调试
+
+### 4. 注释和文档规则
+- 使用Google风格的docstring格式
+- 复杂逻辑必须有行内注释说明
+- 所有公共API必须有使用示例
+- 模块级注释包含作者、创建时间和版本信息
+
+### 5. 测试规则
+- 每个新功能必须包含相应的测试
+- 测试文件以test_开头
+- 测试类以Test开头
+- 测试方法以test_开头
+- 使用pytest-asyncio进行异步测试
+
+### 6. 配置和日志规则
+- 使用环境变量进行配置管理
+- 实现适当的日志记录
+- 不在日志中记录敏感信息
+- 使用结构化的配置类
+
+### 7. 性能和安全规则
+- 优先使用异步操作进行I/O
+- 实现输入验证和清理
+- 避免SQL注入和XSS攻击
+- 使用上下文管理器管理资源
+
+## 代码生成优先级
+
+### 高优先级规则（必须遵循）
+1. **类型安全**: 所有代码必须有完整的类型注解
+2. **文档完整**: 所有公共API必须有详细的docstring
+3. **错误处理**: 实现适当的异常处理和日志记录
+4. **异步支持**: 使用async/await进行异步操作
+5. **输入验证**: 对用户输入进行验证和清理
+
+### 中优先级规则（强烈建议）
+1. **代码风格**: 遵循PEP 8和Black格式化标准
+2. **测试覆盖**: 为新功能编写相应的测试
+3. **性能优化**: 考虑性能和资源使用
+4. **安全性**: 避免常见的安全漏洞
+5. **可维护性**: 编写清晰、可读的代码
+
+### 低优先级规则（建议遵循）
+1. **代码复用**: 避免重复代码，提取公共函数
+2. **命名规范**: 使用清晰、描述性的变量和函数名
+3. **注释质量**: 为复杂逻辑添加行内注释
+4. **模块化**: 将相关功能组织到适当的模块中
+
+## 代码生成上下文
+
+在生成代码时，请考虑以下上下文：
+
+1. **项目目标**: 这是一个基于Agno框架的RAG系统
+2. **技术栈**: Python 3.9+, Agno框架, 异步编程
+3. **架构模式**: 代理模式、工具模式、服务层模式
+4. **代码风格**: 函数式编程与面向对象编程结合
+5. **测试策略**: 单元测试 + 集成测试
+6. **部署环境**: 支持Docker容器化部署
+
+## 特殊注意事项
+
+1. **Agno框架特性**: 充分利用Agno的代理、工具和上下文功能
+2. **异步编程**: 正确处理异步操作和并发
+3. **错误恢复**: 实现优雅的错误处理和恢复机制
+4. **资源管理**: 正确管理数据库连接、文件句柄等资源
+5. **监控和日志**: 实现适当的监控和日志记录
+
+---
+
+**重要提醒**: 这些规则确保了生成的代码符合Agno框架的最佳实践，同时保持了Python的优雅性和可读性。所有代码都将包含详细的注释，便于团队协作和代码维护。
+# Agno RAG System Development Rules
+# 基于Agno框架的RAG系统开发规范
+
+## 项目概述
+这是一个基于Agno框架开发的RAG（Retrieval-Augmented Generation）系统，遵循Agno社区最佳实践和Python规范。
+
+## 代码规范
+
+### 1. 文件结构和命名
+- 使用小写字母和下划线的snake_case命名
+- 文件名应清晰描述其功能
+- 目录结构遵循Agno推荐的项目布局
+- 所有Python文件必须以`.py`结尾
+
+### 2. 代码风格
+- 遵循PEP 8 Python代码风格指南
+- 使用4个空格进行缩进，不使用制表符
+- 行长度限制在88个字符以内（Black格式化器标准）
+- 使用类型注解（Type Hints）
+- 优先使用f-strings进行字符串格式化
+
+### 3. 导入规范
+```python
+# 标准库导入
+import os
+import sys
+from typing import List, Dict, Optional, Union
+
+# 第三方库导入
+import agno
+from agno import Agent, Tool, Context
+import asyncio
+
+# 本地模块导入
+from .models import RAGDocument
+from .utils import text_processor
+```
+
+### 4. 类和函数定义
+- 所有公共API必须有类型注解
+- 使用docstring记录所有函数、类和模块
+- 遵循Google风格的docstring格式
+- 私有方法和属性使用下划线前缀
+
+### 5. 错误处理
+- 使用具体的异常类型而不是通用Exception
+- 提供有意义的错误消息
+- 使用try-except块处理可预期的异常
+- 记录错误日志以便调试
+
+## Agno特定规范
+
+### 1. Agent定义
+```python
+from agno import Agent, Tool, Context
+from typing import List, Dict, Any
+
+class RAGAgent(Agent):
+    """
+    RAG系统的主要代理类
+    
+    负责处理文档检索和生成任务，集成向量数据库
+    和语言模型来提供准确的回答。
+    """
+    
+    def __init__(self, name: str = "rag_agent"):
+        super().__init__(name=name)
+        self.vector_store = None
+        self.llm = None
+    
+    async def setup(self, context: Context) -> None:
+        """初始化代理，设置工具和模型"""
+        # 实现初始化逻辑
+        pass
+    
+    async def process(self, context: Context) -> str:
+        """处理用户查询并返回回答"""
+        # 实现RAG逻辑
+        pass
+```
+
+### 2. Tool定义
+```python
+from agno import Tool
+from typing import Any, Dict
+
+class DocumentSearchTool(Tool):
+    """
+    文档搜索工具
+    
+    在向量数据库中搜索相关文档片段，支持语义搜索
+    和关键词匹配。
+    """
+    
+    name = "document_search"
+    description = "在知识库中搜索相关文档片段"
+    
+    async def execute(self, query: str, **kwargs) -> List[Dict[str, Any]]:
+        """
+        执行文档搜索
+        
+        Args:
+            query: 搜索查询字符串
+            **kwargs: 额外参数（如top_k, similarity_threshold等）
+            
+        Returns:
+            包含相关文档片段的列表
+        """
+        # 实现搜索逻辑
+        pass
+```
+
+### 3. Context使用
+```python
+from agno import Context
+
+async def process_user_query(context: Context, query: str) -> str:
+    """
+    处理用户查询的完整流程
+    
+    Args:
+        context: Agno上下文对象
+        query: 用户查询字符串
+        
+    Returns:
+        生成的回答字符串
+    """
+    # 使用context进行状态管理
+    context.set("user_query", query)
+    context.set("search_results", [])
+    
+    # 执行RAG流程
+    return await rag_agent.process(context)
+```
+
+## 代码生成约束
+
+### 1. 必须遵循的原则
+- 所有代码必须有完整的类型注解
+- 所有公共API必须有详细的docstring
+- 使用async/await进行异步操作
+- 实现适当的错误处理和日志记录
+- 遵循Agno框架的设计模式
+
+### 2. 禁止的做法
+- 避免使用全局变量
+- 避免硬编码配置值
+- 避免使用过时的Python语法
+- 避免忽略异常处理
+- 避免编写过于复杂的函数（超过50行）
+
+### 3. 代码质量要求
+- 使用Black进行代码格式化
+- 使用flake8进行代码检查
+- 使用mypy进行类型检查
+- 测试覆盖率不低于80%
+- 所有代码必须通过CI/CD检查
+
+## 代码生成指导
+
+### 1. 文件创建规则
+- 创建新文件时，必须包含完整的模块级docstring
+- 所有导入语句必须按标准库、第三方库、本地模块的顺序排列
+- 每个文件必须包含适当的类型注解导入
+
+### 2. 函数和类生成规则
+- 所有公共函数必须有完整的类型注解
+- 所有类必须有详细的docstring，包含Attributes和Example部分
+- 私有方法使用下划线前缀
+- 异步函数必须使用async/await语法
+
+### 3. 错误处理规则
+- 使用具体的异常类型，避免使用通用Exception
+- 提供有意义的错误消息
+- 在适当的地方使用try-except块
+- 记录错误日志以便调试
+
+### 4. 注释和文档规则
+- 使用Google风格的docstring格式
+- 复杂逻辑必须有行内注释说明
+- 所有公共API必须有使用示例
+- 模块级注释包含作者、创建时间和版本信息
+
+### 5. 测试规则
+- 每个新功能必须包含相应的测试
+- 测试文件以test_开头
+- 测试类以Test开头
+- 测试方法以test_开头
+- 使用pytest-asyncio进行异步测试
+
+### 6. 配置和日志规则
+- 使用环境变量进行配置管理
+- 实现适当的日志记录
+- 不在日志中记录敏感信息
+- 使用结构化的配置类
+
+### 7. 性能和安全规则
+- 优先使用异步操作进行I/O
+- 实现输入验证和清理
+- 避免SQL注入和XSS攻击
+- 使用上下文管理器管理资源
+
+## 代码生成优先级
+
+### 高优先级规则（必须遵循）
+1. **类型安全**: 所有代码必须有完整的类型注解
+2. **文档完整**: 所有公共API必须有详细的docstring
+3. **错误处理**: 实现适当的异常处理和日志记录
+4. **异步支持**: 使用async/await进行异步操作
+5. **输入验证**: 对用户输入进行验证和清理
+
+### 中优先级规则（强烈建议）
+1. **代码风格**: 遵循PEP 8和Black格式化标准
+2. **测试覆盖**: 为新功能编写相应的测试
+3. **性能优化**: 考虑性能和资源使用
+4. **安全性**: 避免常见的安全漏洞
+5. **可维护性**: 编写清晰、可读的代码
+
+### 低优先级规则（建议遵循）
+1. **代码复用**: 避免重复代码，提取公共函数
+2. **命名规范**: 使用清晰、描述性的变量和函数名
+3. **注释质量**: 为复杂逻辑添加行内注释
+4. **模块化**: 将相关功能组织到适当的模块中
+
+## 代码生成上下文
+
+在生成代码时，请考虑以下上下文：
+
+1. **项目目标**: 这是一个基于Agno框架的RAG系统
+2. **技术栈**: Python 3.9+, Agno框架, 异步编程
+3. **架构模式**: 代理模式、工具模式、服务层模式
+4. **代码风格**: 函数式编程与面向对象编程结合
+5. **测试策略**: 单元测试 + 集成测试
+6. **部署环境**: 支持Docker容器化部署
+
+## 特殊注意事项
+
+1. **Agno框架特性**: 充分利用Agno的代理、工具和上下文功能
+2. **异步编程**: 正确处理异步操作和并发
+3. **错误恢复**: 实现优雅的错误处理和恢复机制
+4. **资源管理**: 正确管理数据库连接、文件句柄等资源
+5. **监控和日志**: 实现适当的监控和日志记录
+
+---
+
+**重要提醒**: 这些规则确保了生成的代码符合Agno框架的最佳实践，同时保持了Python的优雅性和可读性。所有代码都将包含详细的注释，便于团队协作和代码维护。
