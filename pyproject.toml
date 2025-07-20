@@ -1,34 +1,38 @@
 [build-system]
-requires = ["setuptools>=61.0", "wheel"]
-build-backend = "setuptools.build_meta"
+requires = ["hatchling"]
+build-backend = "hatchling.build"
 
 [project]
 name = "agno-rag-system"
 version = "1.0.0"
-description = "基于Agno框架的RAG（检索增强生成）系统"
-authors = [
-    {name = "RAG Team", email = "team@example.com"}
-]
+description = "Agentic RAG 多跳问答系统 - 基于Agno框架的多Agent协作知识问答系统"
 readme = "README.md"
 license = {text = "MIT"}
-requires-python = ">=3.9"
+authors = [
+    {name = "RAG Team", email = "rag@example.com"}
+]
+keywords = ["rag", "agentic", "multi-hop", "knowledge-graph", "agno"]
 classifiers = [
     "Development Status :: 4 - Beta",
     "Intended Audience :: Developers",
     "License :: OSI Approved :: MIT License",
     "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.8",
     "Programming Language :: Python :: 3.9",
     "Programming Language :: Python :: 3.10",
     "Programming Language :: Python :: 3.11",
     "Programming Language :: Python :: 3.12",
     "Topic :: Scientific/Engineering :: Artificial Intelligence",
-    "Topic :: Text Processing :: Linguistic",
+    "Topic :: Software Development :: Libraries :: Python Modules",
 ]
-keywords = ["rag", "agno", "ai", "nlp", "retrieval", "generation"]
+requires-python = ">=3.8"
 dependencies = [
     "agno>=0.1.0",
     "pydantic>=2.0.0",
+    "numpy>=1.21.0",
     "python-dotenv>=1.0.0",
+    "asyncio-mqtt>=0.16.0",
+    "aiofiles>=23.0.0",
 ]
 
 [project.optional-dependencies]
@@ -37,79 +41,49 @@ dev = [
     "pytest-asyncio>=0.21.0",
     "pytest-cov>=4.0.0",
     "black>=23.0.0",
+    "isort>=5.12.0",
     "flake8>=6.0.0",
     "mypy>=1.0.0",
-    "isort>=5.12.0",
     "pre-commit>=3.0.0",
 ]
 test = [
     "pytest>=7.0.0",
     "pytest-asyncio>=0.21.0",
     "pytest-cov>=4.0.0",
+    "pytest-mock>=3.10.0",
+]
+docs = [
+    "sphinx>=6.0.0",
+    "sphinx-rtd-theme>=1.2.0",
+    "myst-parser>=1.0.0",
 ]
 
 [project.urls]
-Homepage = "https://github.com/your-org/agno-rag-system"
+Homepage = "https://github.com/example/agno-rag-system"
 Documentation = "https://agno-rag-system.readthedocs.io"
-Repository = "https://github.com/your-org/agno-rag-system"
-"Bug Tracker" = "https://github.com/your-org/agno-rag-system/issues"
+Repository = "https://github.com/example/agno-rag-system.git"
+Issues = "https://github.com/example/agno-rag-system/issues"
+Changelog = "https://github.com/example/agno-rag-system/blob/main/CHANGELOG.md"
 
 [project.scripts]
 agno-rag = "src.cli:main"
 
-[tool.setuptools.packages.find]
-where = ["src"]
+[tool.hatch.build.targets.wheel]
+packages = ["src"]
 
-[tool.setuptools.package-data]
-"*" = ["*.txt", "*.md", "*.yml", "*.yaml"]
-
-[tool.black]
-line-length = 88
-target-version = ['py39']
-include = '\.pyi?$'
-extend-exclude = '''
-/(
-  # directories
-  \.eggs
-  | \.git
-  | \.hg
-  | \.mypy_cache
-  | \.tox
-  | \.venv
-  | build
-  | dist
-)/
-'''
-
-[tool.isort]
-profile = "black"
-multi_line_output = 3
-line_length = 88
-known_first_party = ["src"]
-known_third_party = ["agno", "pytest", "asyncio"]
-
-[tool.mypy]
-python_version = "3.9"
-warn_return_any = true
-warn_unused_configs = true
-disallow_untyped_defs = true
-disallow_incomplete_defs = true
-check_untyped_defs = true
-disallow_untyped_decorators = true
-no_implicit_optional = true
-warn_redundant_casts = true
-warn_unused_ignores = true
-warn_no_return = true
-warn_unreachable = true
-strict_equality = true
-
-[[tool.mypy.overrides]]
-module = [
-    "tests.*",
-    "test_*",
+[tool.hatch.build.targets.sdist]
+include = [
+    "/src",
+    "/tests",
+    "/docs",
+    "/data",
+    "/config",
+    "README.md",
+    "CHANGELOG.md",
+    "LICENSE",
+    "pyproject.toml",
+    ".gitignore",
 ]
-disallow_untyped_defs = false
-disallow_incomplete_defs = false
 
 [tool.pytest.ini_options]
 minversion = "7.0"
@@ -120,13 +94,12 @@ addopts = [
     "--cov-report=term-missing",
     "--cov-report=html",
     "--cov-report=xml",
-    "--cov-fail-under=80",
+    "--asyncio-mode=auto",
 ]
 testpaths = ["tests"]
 python_files = ["test_*.py", "*_test.py"]
 python_classes = ["Test*"]
 python_functions = ["test_*"]
-asyncio_mode = "auto"
 markers = [
     "slow: marks tests as slow (deselect with '-m \"not slow\"')",
     "integration: marks tests as integration tests",
@@ -156,6 +129,33 @@ exclude_lines = [
     "@(abc\\.)?abstractmethod",
 ]
 
+[tool.black]
+line-length = 88
+target-version = ['py38', 'py39', 'py310', 'py311', 'py312']
+include = '\.pyi?$'
+extend-exclude = '''
+/(
+  # directories
+  \.eggs
+  | \.git
+  | \.hg
+  | \.mypy_cache
+  | \.tox
+  | \.venv
+  | build
+  | dist
+)/
+'''
+
+[tool.isort]
+profile = "black"
+multi_line_output = 3
+line_length = 88
+known_first_party = ["src"]
+known_third_party = ["agno", "pydantic", "numpy", "asyncio", "aiofiles"]
+sections = ["FUTURE", "STDLIB", "THIRDPARTY", "FIRSTPARTY", "LOCALFOLDER"]
+default_section = "THIRDPARTY"
+
 [tool.flake8]
 max-line-length = 88
 extend-ignore = ["E203", "W503"]
@@ -165,41 +165,31 @@ exclude = [
     "build",
     "dist",
     ".venv",
-    ".mypy_cache",
-    ".pytest_cache",
+    ".eggs",
+    "*.egg",
 ]
 
-[tool.pre-commit]
-repos = [
-    {
-        repo = "https://github.com/pre-commit/pre-commit-hooks",
-        rev = "v4.4.0",
-        hooks = [
-            {id = "trailing-whitespace"},
-            {id = "end-of-file-fixer"},
-            {id = "check-yaml"},
-            {id = "check-added-large-files"},
-            {id = "check-merge-conflict"},
-        ],
-    },
-    {
-        repo = "https://github.com/psf/black",
-        rev = "23.3.0",
-        hooks = [{id = "black"}],
-    },
-    {
-        repo = "https://github.com/pycqa/isort",
-        rev = "5.12.0",
-        hooks = [{id = "isort"}],
-    },
-    {
-        repo = "https://github.com/pycqa/flake8",
-        rev = "6.0.0",
-        hooks = [{id = "flake8"}],
-    },
-    {
-        repo = "https://github.com/pre-commit/mirrors-mypy",
-        rev = "v1.3.0",
-        hooks = [{id = "mypy", additional_dependencies = ["types-all"]}],
-    },
-] 
+[tool.mypy]
+python_version = "3.8"
+warn_return_any = true
+warn_unused_configs = true
+disallow_untyped_defs = true
+disallow_incomplete_defs = true
+check_untyped_defs = true
+disallow_untyped_decorators = true
+no_implicit_optional = true
+warn_redundant_casts = true
+warn_unused_ignores = true
+warn_no_return = true
+warn_unreachable = true
+strict_equality = true
+
+[[tool.mypy.overrides]]
+module = [
+    "agno.*",
+    "pydantic.*",
+    "numpy.*",
+    "asyncio_mqtt.*",
+    "aiofiles.*",
+]
+ignore_missing_imports = true
